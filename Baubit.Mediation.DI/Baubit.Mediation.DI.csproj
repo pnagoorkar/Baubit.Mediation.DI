@@ -15,7 +15,7 @@
     <AssemblyOriginatorKeyFile>$(KeyFilePath)</AssemblyOriginatorKeyFile>
     <EmitCompilerGeneratedFiles>false</EmitCompilerGeneratedFiles>
     <Description>DI support for Baubit.Mediation</Description>
-    <PackageTags>TBD</PackageTags>
+    <PackageTags>mediation;mediator;di;dependency-injection;cqrs;request-response;pub-sub;baubit</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
