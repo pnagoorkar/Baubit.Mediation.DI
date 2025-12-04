@@ -14,6 +14,7 @@ namespace Baubit.Mediation.DI.Test.Module
         /// <summary>
         /// Helper method to create a ServiceCollection with cache dependencies using Baubit modules
         /// </summary>
+        /// <param name="cacheKey">Optional registration key for the cache. When null, cache is registered without a key.</param>
         private ServiceCollection CreateServicesWithCacheDependencies(string? cacheKey = null)
         {
             var services = new ServiceCollection();
