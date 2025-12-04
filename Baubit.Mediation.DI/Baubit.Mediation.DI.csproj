@@ -2,6 +2,30 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyVersion>$(AssemblyVersion)</AssemblyVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <Deterministic>true</Deterministic>
+    <RepositoryUrl>https://github.com/pnagoorkar/Baubit.Mediation.DI</RepositoryUrl>
+    <Authors>Prashant Nagoorkar</Authors>
+    <SignAssembly>$(SignAssembly)</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(KeyFilePath)</AssemblyOriginatorKeyFile>
+    <EmitCompilerGeneratedFiles>false</EmitCompilerGeneratedFiles>
+    <Description>DI support for Baubit.Mediation</Description>
+    <PackageTags>TBD</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="." />
+    <None Include="../LICENSE" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Baubit.DI.Extensions" Version="2025.49.3" />
+    <PackageReference Include="Baubit.Mediation" Version="2025.49.1" />
+  </ItemGroup>
 
 </Project>
