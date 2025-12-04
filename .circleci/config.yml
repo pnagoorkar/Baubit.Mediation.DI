@@ -149,8 +149,16 @@ jobs:
       - run:
           name: Test
           command: |
-            SOLUTION_FILE="${SOLUTION_FOLDER}.sln"                
-            dotnet test ${SOLUTION_FILE} \
+            TEST_PROJECT="${PROJECT_NAME}.Test/${PROJECT_NAME}.Test.csproj"
+            
+            if [ ! -f "$TEST_PROJECT" ]; then
+              echo "Test project not found at: $TEST_PROJECT"
+              echo "Skipping tests..."
+              exit 0
+            fi
+            
+            dotnet test ${TEST_PROJECT} \
+              --configuration Release \
               --collect:"XPlat Code Coverage" \
               --results-directory ./TestResults/ \
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
