@@ -43,6 +43,7 @@ await Host.CreateApplicationBuilder()
 {
   "modules": [
     {
+      // Fully qualified type: Namespace.Type`Arity[[GenericArg]], Assembly
       "type": "Baubit.Caching.DI.InMemory.Module`1[[System.Object]], Baubit.Caching.DI",
       "configuration": {
         "cacheLifetime": "Singleton"
