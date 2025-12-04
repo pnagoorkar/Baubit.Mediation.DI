@@ -25,17 +25,90 @@ Install-Package Baubit.Mediation.DI
 
 ## Quick Start
 
-```csharp
-using Baubit.Mediation.DI;
-using Microsoft.Extensions.DependencyInjection;
+Baubit.Mediation.DI supports three patterns for module loading, consistent with [Baubit.DI](https://github.com/pnagoorkar/Baubit.DI):
 
+### Pattern 1: Modules from appsettings.json
+
+Load mediator configuration from JSON. Module types and settings are defined in configuration files.
+
+```csharp
+await Host.CreateApplicationBuilder()
+          .UseConfiguredServiceProviderFactory()
+          .Build()
+          .RunAsync();
+```
+
+**appsettings.json:**
+```json
+{
+  "modules": [
+    {
+      "type": "Baubit.Caching.DI.InMemory.Module`1[[System.Object]], Baubit.Caching.DI",
+      "configuration": {
+        "cacheLifetime": "Singleton"
+      }
+    },
+    {
+      "type": "Baubit.Mediation.DI.Module, Baubit.Mediation.DI",
+      "configuration": {
+        "serviceLifetime": "Singleton"
+      }
+    }
+  ]
+}
+```
+
+### Pattern 2: Modules from Code (IComponent)
+
+Load mediator programmatically using `IComponent`. No configuration file needed.
+
+```csharp
+public class AppComponent : AComponent
+{
+    protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
+    {
+        return builder.WithModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
+                {
+                    config.CacheLifetime = ServiceLifetime.Singleton;
+                })
+                .WithModule<Module, Configuration>(config =>
+                {
+                    config.ServiceLifetime = ServiceLifetime.Singleton;
+                });
+    }
+}
+
+await Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings())
+          .UseConfiguredServiceProviderFactory(componentsFactory: () => [new AppComponent()])
+          .Build()
+          .RunAsync();
+```
+
+### Pattern 3: Hybrid Loading (appsettings.json + IComponent)
+
+Combine configuration-based and code-based module loading.
+
+```csharp
+await Host.CreateApplicationBuilder()
+          .UseConfiguredServiceProviderFactory(componentsFactory: () => [new AppComponent()])
+          .Build()
+          .RunAsync();
+```
+
+### Using AddModule Directly
+
+For direct service collection usage without Host:
+
+```csharp
 var services = new ServiceCollection();
 
-// Register required dependencies
-services.AddSingleton<IOrderedCache<object>>(/* your cache implementation */);
-services.AddSingleton<ILoggerFactory>(/* your logger factory */);
+// Add cache dependency
+services.AddModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
+{
+    config.CacheLifetime = ServiceLifetime.Singleton;
+});
 
-// Register mediator as singleton
+// Add mediator
 services.AddModule<Module, Configuration>(config =>
 {
     config.ServiceLifetime = ServiceLifetime.Singleton;

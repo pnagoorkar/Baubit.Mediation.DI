@@ -1,8 +1,8 @@
 ﻿using Baubit.Caching;
+using Baubit.DI.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace Baubit.Mediation.DI.Test.Module
 {
@@ -11,6 +11,35 @@ namespace Baubit.Mediation.DI.Test.Module
     /// </summary>
     public class Test
     {
+        /// <summary>
+        /// Helper method to create a ServiceCollection with cache dependencies using Baubit modules
+        /// </summary>
+        private ServiceCollection CreateServicesWithCacheDependencies(string? cacheKey = null)
+        {
+            var services = new ServiceCollection();
+            
+            // Add logger factory
+            services.AddLogging();
+            
+            if (cacheKey == null)
+            {
+                services.AddModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
+                {
+                    config.CacheLifetime = ServiceLifetime.Singleton;
+                });
+            }
+            else
+            {
+                services.AddModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
+                {
+                    config.CacheLifetime = ServiceLifetime.Singleton;
+                    config.RegistrationKey = cacheKey;
+                });
+            }
+            
+            return services;
+        }
+
         [Fact]
         public void Constructor_WithIConfiguration_CreatesModule()
         {
@@ -74,11 +103,7 @@ namespace Baubit.Mediation.DI.Test.Module
                 ServiceLifetime = ServiceLifetime.Singleton
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddSingleton<IOrderedCache<object>>(Mock.Of<IOrderedCache<object>>());
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies();
 
             // Act
             module.Load(services);
@@ -100,11 +125,7 @@ namespace Baubit.Mediation.DI.Test.Module
                 ServiceLifetime = ServiceLifetime.Singleton
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddSingleton<IOrderedCache<object>>(Mock.Of<IOrderedCache<object>>());
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies();
 
             // Act
             module.Load(services);
@@ -125,11 +146,7 @@ namespace Baubit.Mediation.DI.Test.Module
                 ServiceLifetime = ServiceLifetime.Transient
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddSingleton<IOrderedCache<object>>(Mock.Of<IOrderedCache<object>>());
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies();
 
             // Act
             module.Load(services);
@@ -154,11 +171,7 @@ namespace Baubit.Mediation.DI.Test.Module
                 ServiceLifetime = ServiceLifetime.Transient
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddSingleton<IOrderedCache<object>>(Mock.Of<IOrderedCache<object>>());
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies();
 
             // Act
             module.Load(services);
@@ -182,11 +195,7 @@ namespace Baubit.Mediation.DI.Test.Module
                 ServiceLifetime = ServiceLifetime.Scoped
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddSingleton<IOrderedCache<object>>(Mock.Of<IOrderedCache<object>>());
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies();
 
             // Act
             module.Load(services);
@@ -215,11 +224,7 @@ namespace Baubit.Mediation.DI.Test.Module
                 ServiceLifetime = ServiceLifetime.Scoped
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddSingleton<IOrderedCache<object>>(Mock.Of<IOrderedCache<object>>());
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies();
 
             // Act
             module.Load(services);
@@ -241,18 +246,13 @@ namespace Baubit.Mediation.DI.Test.Module
         public void Load_ResolvesUnkeyedCache_WhenCacheRegistrationKeyIsNull()
         {
             // Arrange
-            var mockCache = Mock.Of<IOrderedCache<object>>();
             var configuration = new DI.Configuration
             {
                 CacheRegistrationKey = null,
                 ServiceLifetime = ServiceLifetime.Singleton
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddSingleton<IOrderedCache<object>>(mockCache);
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies();
 
             // Act
             module.Load(services);
@@ -268,18 +268,13 @@ namespace Baubit.Mediation.DI.Test.Module
         {
             // Arrange
             var cacheKey = "cache-key";
-            var mockCache = Mock.Of<IOrderedCache<object>>();
             var configuration = new DI.Configuration
             {
                 CacheRegistrationKey = cacheKey,
                 ServiceLifetime = ServiceLifetime.Singleton
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddKeyedSingleton<IOrderedCache<object>>(cacheKey, mockCache);
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies(cacheKey);
 
             // Act
             module.Load(services);
@@ -299,11 +294,7 @@ namespace Baubit.Mediation.DI.Test.Module
                 ServiceLifetime = ServiceLifetime.Singleton
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddSingleton<IOrderedCache<object>>(Mock.Of<IOrderedCache<object>>());
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies();
 
             // Act
             module.Load(services);
@@ -324,11 +315,7 @@ namespace Baubit.Mediation.DI.Test.Module
                 ServiceLifetime = ServiceLifetime.Scoped
             };
             var module = new DI.Module(configuration);
-            var services = new ServiceCollection();
-
-            // Add required dependencies
-            services.AddSingleton<IOrderedCache<object>>(Mock.Of<IOrderedCache<object>>());
-            services.AddSingleton<ILoggerFactory>(Mock.Of<ILoggerFactory>());
+            var services = CreateServicesWithCacheDependencies();
 
             // Act
             module.Load(services);
