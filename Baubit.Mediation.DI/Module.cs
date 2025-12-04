@@ -8,16 +8,34 @@ using System.Collections.Generic;
 
 namespace Baubit.Mediation.DI
 {
+    /// <summary>
+    /// DI module for registering <see cref="IMediator"/> with Microsoft.Extensions.DependencyInjection.
+    /// Configures the mediator with specified service lifetime and optional keyed registration.
+    /// </summary>
     public class Module : AModule<Configuration>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Module"/> class from configuration.
+        /// </summary>
+        /// <param name="configuration">The configuration section to bind settings from.</param>
         public Module(IConfiguration configuration) : base(configuration)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Module"/> class with strongly-typed configuration.
+        /// </summary>
+        /// <param name="configuration">The strongly-typed configuration for this module.</param>
+        /// <param name="nestedModules">Optional list of nested modules this module depends on.</param>
         public Module(Configuration configuration, List<IModule> nestedModules = null) : base(configuration, nestedModules)
         {
         }
 
+        /// <summary>
+        /// Registers the <see cref="IMediator"/> service with the specified service collection.
+        /// The registration respects the configured <see cref="Configuration.ServiceLifetime"/> and <see cref="Configuration.RegistrationKey"/>.
+        /// </summary>
+        /// <param name="services">The service collection to register services with.</param>
         public override void Load(IServiceCollection services)
         {
             switch (Configuration.ServiceLifetime)

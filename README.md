@@ -6,3 +6,163 @@
 ![.NET Standard 2.0](https://img.shields.io/badge/.NET%20Standard-2.0-512BD4?logo=dotnet&logoColor=white)<br/>
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Known Vulnerabilities](https://snyk.io/test/github/pnagoorkar/Baubit.Mediation.DI/badge.svg)](https://snyk.io/test/github/pnagoorkar/Baubit.Mediation.DI)
+
+## Overview
+
+Baubit.Mediation.DI provides Microsoft.Extensions.DependencyInjection integration for Baubit.Mediation. Enables registration of IMediator instances with configurable service lifetimes and keyed services support.
+
+## Installation
+
+```bash
+dotnet add package Baubit.Mediation.DI
+```
+
+Or via NuGet Package Manager:
+
+```
+Install-Package Baubit.Mediation.DI
+```
+
+## Quick Start
+
+```csharp
+using Baubit.Mediation.DI;
+using Microsoft.Extensions.DependencyInjection;
+
+var services = new ServiceCollection();
+
+// Register required dependencies
+services.AddSingleton<IOrderedCache<object>>(/* your cache implementation */);
+services.AddSingleton<ILoggerFactory>(/* your logger factory */);
+
+// Register mediator as singleton
+services.AddModule<Module, Configuration>(config =>
+{
+    config.ServiceLifetime = ServiceLifetime.Singleton;
+});
+
+var serviceProvider = services.BuildServiceProvider();
+var mediator = serviceProvider.GetRequiredService<IMediator>();
+```
+
+## Features
+
+- **Flexible Service Lifetimes**: Register IMediator as Singleton, Transient, or Scoped
+- **Keyed Services**: Support for keyed service registration and resolution
+- **Cache Integration**: Configurable cache resolution with optional keyed services
+- **Type-Safe Configuration**: Strongly-typed configuration with sensible defaults
+- **.NET Standard 2.0**: Compatible with .NET Framework, .NET Core, and .NET 5+
+
+## API Reference
+
+### Configuration
+
+Configuration class for the Mediation DI module:
+
+```csharp
+public class Configuration : AConfiguration
+{
+    // Optional key for resolving IOrderedCache<object>. Null resolves unkeyed service.
+    public string CacheRegistrationKey { get; set; } = null;
+
+    // Optional key for registering IMediator. Null registers without a key.
+    public string RegistrationKey { get; set; } = null;
+
+    // Service lifetime for IMediator. Defaults to Singleton.
+    public ServiceLifetime ServiceLifetime { get; set; } = ServiceLifetime.Singleton;
+}
+```
+
+### Module
+
+DI module for registering IMediator:
+
+```csharp
+public class Module : AModule<Configuration>
+{
+    public Module(IConfiguration configuration);
+    public Module(Configuration configuration, List<IModule> nestedModules = null);
+    public override void Load(IServiceCollection services);
+}
+```
+
+### Usage Examples
+
+**Singleton Registration (Default):**
+
+```csharp
+services.AddModule<Module, Configuration>(config =>
+{
+    config.ServiceLifetime = ServiceLifetime.Singleton;
+});
+
+var mediator = serviceProvider.GetRequiredService<IMediator>();
+```
+
+**Transient Registration:**
+
+```csharp
+services.AddModule<Module, Configuration>(config =>
+{
+    config.ServiceLifetime = ServiceLifetime.Transient;
+});
+
+// Each resolution creates a new instance
+var mediator1 = serviceProvider.GetRequiredService<IMediator>();
+var mediator2 = serviceProvider.GetRequiredService<IMediator>();
+```
+
+**Scoped Registration:**
+
+```csharp
+services.AddModule<Module, Configuration>(config =>
+{
+    config.ServiceLifetime = ServiceLifetime.Scoped;
+});
+
+using (var scope = serviceProvider.CreateScope())
+{
+    var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+}
+```
+
+**Keyed Service Registration:**
+
+```csharp
+services.AddModule<Module, Configuration>(config =>
+{
+    config.RegistrationKey = "my-mediator";
+    config.ServiceLifetime = ServiceLifetime.Singleton;
+});
+
+var mediator = serviceProvider.GetRequiredKeyedService<IMediator>("my-mediator");
+```
+
+**Keyed Cache Resolution:**
+
+```csharp
+// Register cache with a key
+services.AddKeyedSingleton<IOrderedCache<object>>("my-cache", /* implementation */);
+
+// Configure module to use keyed cache
+services.AddModule<Module, Configuration>(config =>
+{
+    config.CacheRegistrationKey = "my-cache";
+});
+```
+
+## Thread Safety
+
+All registered IMediator instances are thread-safe. The Module.Load method can be called concurrently. Service lifetime behavior follows Microsoft.Extensions.DependencyInjection semantics:
+
+- **Singleton**: Single instance shared across all requests. Thread-safe.
+- **Transient**: New instance per resolution. No shared state.
+- **Scoped**: Single instance per scope. Thread-safe within a scope.
+
+## Contributing
+
+Contributions are welcome. Open an issue or submit a pull request.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
