@@ -9,7 +9,7 @@
 
 ## Overview
 
-Baubit.Mediation.DI provides Microsoft.Extensions.DependencyInjection integration for Baubit.Mediation. Enables registration of IMediator instances with configurable service lifetimes and keyed services support.
+DI extension for Baubit.Mediation. Enables registration of IMediator instances with configurable service lifetimes and keyed services support.
 
 ## Installation
 
@@ -223,14 +223,6 @@ services.AddModule<Module, Configuration>(config =>
     config.CacheRegistrationKey = "my-cache";
 });
 ```
-
-## Thread Safety
-
-All registered IMediator instances are thread-safe. The Module.Load method can be called concurrently. Service lifetime behavior follows Microsoft.Extensions.DependencyInjection semantics:
-
-- **Singleton**: Single instance shared across all requests. Thread-safe.
-- **Transient**: New instance per resolution. No shared state.
-- **Scoped**: Single instance per scope. Thread-safe within a scope.
 
 ## Contributing
 
