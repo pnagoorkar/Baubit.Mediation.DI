@@ -10,7 +10,7 @@
 
 ## Overview
 
-DI extension for Baubit.Mediation. Enables registration of IMediator instances with configurable service lifetimes and keyed services support.
+DI extension for [Baubit.Mediation](https://github.com/pnagoorkar/Baubit.Mediation). Enables registration of IMediator instances with configurable service lifetimes and keyed services support.
 
 ## Installation
 
