@@ -41,7 +41,7 @@ namespace Baubit.Mediation.DI.Test.Module
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var cacheConfig = new Baubit.Caching.Configuration();
             var metadata = new Metadata { Configuration = cacheConfig };
-            var l2Store = new Store<object>(loggerFactory);
+            var l2Store = new Caching.InMemory.Store<object>(loggerFactory);
             
             return new OrderedCache<object>(cacheConfig, null, l2Store, metadata, loggerFactory);
         }
