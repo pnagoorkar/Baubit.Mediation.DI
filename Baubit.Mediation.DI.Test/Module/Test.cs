@@ -1,9 +1,9 @@
 ﻿using Baubit.Caching;
+using Baubit.Caching.InMemory;
 using Baubit.DI.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
 
 namespace Baubit.Mediation.DI.Test.Module
 {
@@ -23,19 +23,27 @@ namespace Baubit.Mediation.DI.Test.Module
             // Add logger factory
             services.AddLogging();
             
-            // Register mock cache for testing
-            var mockCache = Substitute.For<IOrderedCache<object>>();
-            
+            // Register OrderedCache using Baubit.Caching InMemory implementations
             if (cacheKey == null)
             {
-                services.AddSingleton<IOrderedCache<object>>(mockCache);
+                services.AddSingleton<IOrderedCache<object>>(sp => CreateOrderedCache(sp));
             }
             else
             {
-                services.AddKeyedSingleton<IOrderedCache<object>>(cacheKey, mockCache);
+                services.AddKeyedSingleton<IOrderedCache<object>>(cacheKey, (sp, key) => CreateOrderedCache(sp));
             }
             
             return services;
+        }
+
+        private static IOrderedCache<object> CreateOrderedCache(IServiceProvider serviceProvider)
+        {
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            var cacheConfig = new Baubit.Caching.Configuration();
+            var metadata = new Metadata { Configuration = cacheConfig };
+            var l2Store = new Store<object>(loggerFactory);
+            
+            return new OrderedCache<object>(cacheConfig, null, l2Store, metadata, loggerFactory);
         }
 
         [Fact]
