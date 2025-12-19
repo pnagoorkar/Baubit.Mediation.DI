@@ -7,7 +7,7 @@ namespace Baubit.Mediation.DI
     /// Configuration class for the Mediation DI module.
     /// Specifies how the <see cref="IMediator"/> instance should be registered in the service collection.
     /// </summary>
-    public class Configuration : AConfiguration
+    public class Configuration : Baubit.DI.Configuration
     {
         /// <summary>
         /// Gets or sets the registration key for retrieving the <see cref="Baubit.Caching.IOrderedCache{T}"/> dependency.
