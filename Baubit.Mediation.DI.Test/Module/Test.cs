@@ -3,6 +3,7 @@ using Baubit.DI.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NSubstitute;
 
 namespace Baubit.Mediation.DI.Test.Module
 {
@@ -12,7 +13,7 @@ namespace Baubit.Mediation.DI.Test.Module
     public class Test
     {
         /// <summary>
-        /// Helper method to create a ServiceCollection with cache dependencies using Baubit modules
+        /// Helper method to create a ServiceCollection with cache dependencies
         /// </summary>
         /// <param name="cacheKey">Optional registration key for the cache. When null, cache is registered without a key.</param>
         private ServiceCollection CreateServicesWithCacheDependencies(string? cacheKey = null)
@@ -22,20 +23,16 @@ namespace Baubit.Mediation.DI.Test.Module
             // Add logger factory
             services.AddLogging();
             
+            // Register mock cache for testing
+            var mockCache = Substitute.For<IOrderedCache<object>>();
+            
             if (cacheKey == null)
             {
-                services.AddModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
-                {
-                    config.CacheLifetime = ServiceLifetime.Singleton;
-                });
+                services.AddSingleton<IOrderedCache<object>>(mockCache);
             }
             else
             {
-                services.AddModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
-                {
-                    config.CacheLifetime = ServiceLifetime.Singleton;
-                    config.RegistrationKey = cacheKey;
-                });
+                services.AddKeyedSingleton<IOrderedCache<object>>(cacheKey, mockCache);
             }
             
             return services;
@@ -332,7 +329,7 @@ namespace Baubit.Mediation.DI.Test.Module
         }
 
         [Fact]
-        public void Module_IsSubclassOfAModule()
+        public void Module_IsSubclassOfModule()
         {
             // Arrange
             var configuration = new DI.Configuration();
@@ -341,7 +338,7 @@ namespace Baubit.Mediation.DI.Test.Module
             var module = new DI.Module(configuration);
 
             // Assert
-            Assert.IsAssignableFrom<Baubit.DI.AModule<DI.Configuration>>(module);
+            Assert.IsAssignableFrom<Baubit.DI.Module<DI.Configuration>>(module);
         }
     }
 }

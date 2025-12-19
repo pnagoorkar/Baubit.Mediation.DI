@@ -65,7 +65,7 @@ await Host.CreateApplicationBuilder()
 Load mediator programmatically using `IComponent`. No configuration file needed.
 
 ```csharp
-public class AppComponent : AComponent
+public class AppComponent : Component
 {
     protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
     {
@@ -135,7 +135,7 @@ var mediator = serviceProvider.GetRequiredService<IMediator>();
 Configuration class for the Mediation DI module:
 
 ```csharp
-public class Configuration : AConfiguration
+public class Configuration : Baubit.DI.Configuration
 {
     // Optional key for resolving IOrderedCache<object>. Null resolves unkeyed service.
     public string CacheRegistrationKey { get; set; } = null;
@@ -153,7 +153,7 @@ public class Configuration : AConfiguration
 DI module for registering IMediator:
 
 ```csharp
-public class Module : AModule<Configuration>
+public class Module : Baubit.DI.Module<Configuration>
 {
     public Module(IConfiguration configuration);
     public Module(Configuration configuration, List<IModule> nestedModules = null);

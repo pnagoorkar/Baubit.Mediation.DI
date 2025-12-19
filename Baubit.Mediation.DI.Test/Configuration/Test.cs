@@ -64,13 +64,13 @@ namespace Baubit.Mediation.DI.Test.Configuration
         }
 
         [Fact]
-        public void Configuration_IsSubclassOfAConfiguration()
+        public void Configuration_IsSubclassOfConfiguration()
         {
             // Arrange & Act
             var configuration = new DI.Configuration();
 
             // Assert
-            Assert.IsAssignableFrom<Baubit.DI.AConfiguration>(configuration);
+            Assert.IsAssignableFrom<Baubit.DI.Configuration>(configuration);
         }
     }
 }
