@@ -26,11 +26,30 @@ Install-Package Baubit.Mediation.DI
 
 ## Quick Start
 
-Baubit.Mediation.DI supports three patterns for module loading, consistent with [Baubit.DI](https://github.com/pnagoorkar/Baubit.DI):
+Baubit.Mediation.DI supports three patterns for module loading, consistent with [Baubit.DI](https://github.com/pnagoorkar/Baubit.DI).
+
+### Important: Module Registration
+
+Before using any pattern, you must register the module with `[BaubitModule]` attribute for security:
+
+```csharp
+using Baubit.DI;
+
+namespace Baubit.Mediation.DI
+{
+    [BaubitModule("baubit-mediation")]
+    public class Module : Baubit.DI.Module<Configuration>
+    {
+        // Module implementation
+    }
+}
+```
+
+The `[BaubitModule]` attribute enables compile-time validated, secure configuration loading using simple string keys instead of assembly-qualified type names.
 
 ### Pattern 1: Modules from appsettings.json
 
-Load mediator configuration from JSON. Module types and settings are defined in configuration files.
+Load mediator configuration from JSON using secure module keys.
 
 ```csharp
 await Host.CreateApplicationBuilder()
@@ -44,14 +63,7 @@ await Host.CreateApplicationBuilder()
 {
   "modules": [
     {
-      // Fully qualified type: Namespace.Type`Arity[[GenericArg]], Assembly
-      "type": "Baubit.Caching.DI.InMemory.Module`1[[System.Object]], Baubit.Caching.DI",
-      "configuration": {
-        "cacheLifetime": "Singleton"
-      }
-    },
-    {
-      "type": "Baubit.Mediation.DI.Module, Baubit.Mediation.DI",
+      "key": "baubit-mediation",
       "configuration": {
         "serviceLifetime": "Singleton"
       }
@@ -59,6 +71,8 @@ await Host.CreateApplicationBuilder()
   ]
 }
 ```
+
+**Security:** Configuration uses simple string keys (defined in `[BaubitModule]` attribute), not assembly-qualified type names, eliminating remote code execution vulnerabilities.
 
 ### Pattern 2: Modules from Code (IComponent)
 
@@ -69,14 +83,10 @@ public class AppComponent : Component
 {
     protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
     {
-        return builder.WithModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
-                {
-                    config.CacheLifetime = ServiceLifetime.Singleton;
-                })
-                .WithModule<Module, Configuration>(config =>
-                {
-                    config.ServiceLifetime = ServiceLifetime.Singleton;
-                });
+        return builder.WithModule<Module, Configuration>(config =>
+        {
+            config.ServiceLifetime = ServiceLifetime.Singleton;
+        });
     }
 }
 
@@ -97,6 +107,10 @@ await Host.CreateApplicationBuilder()
           .RunAsync();
 ```
 
+**Loading order:**
+1. Components from `componentsFactory` are loaded first
+2. Modules from appsettings.json `modules` section are loaded second
+
 ### Using AddModule Directly
 
 For direct service collection usage without Host:
@@ -104,13 +118,7 @@ For direct service collection usage without Host:
 ```csharp
 var services = new ServiceCollection();
 
-// Add cache dependency
-services.AddModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
-{
-    config.CacheLifetime = ServiceLifetime.Singleton;
-});
-
-// Add mediator
+// Add mediator using AddModule extension
 services.AddModule<Module, Configuration>(config =>
 {
     config.ServiceLifetime = ServiceLifetime.Singleton;

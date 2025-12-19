@@ -12,6 +12,7 @@ namespace Baubit.Mediation.DI
     /// DI module for registering <see cref="IMediator"/> with Microsoft.Extensions.DependencyInjection.
     /// Configures the mediator with specified service lifetime and optional keyed registration.
     /// </summary>
+    [BaubitModule("baubit-mediation")]
     public class Module : Baubit.DI.Module<Configuration>
     {
         /// <summary>
