@@ -1,4 +1,5 @@
 ﻿using Baubit.Caching;
+using Baubit.Caching.InMemory;
 using Baubit.DI.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +13,7 @@ namespace Baubit.Mediation.DI.Test.Module
     public class Test
     {
         /// <summary>
-        /// Helper method to create a ServiceCollection with cache dependencies using Baubit modules
+        /// Helper method to create a ServiceCollection with cache dependencies
         /// </summary>
         /// <param name="cacheKey">Optional registration key for the cache. When null, cache is registered without a key.</param>
         private ServiceCollection CreateServicesWithCacheDependencies(string? cacheKey = null)
@@ -22,23 +23,27 @@ namespace Baubit.Mediation.DI.Test.Module
             // Add logger factory
             services.AddLogging();
             
+            // Register OrderedCache using Baubit.Caching InMemory implementations
             if (cacheKey == null)
             {
-                services.AddModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
-                {
-                    config.CacheLifetime = ServiceLifetime.Singleton;
-                });
+                services.AddSingleton<IOrderedCache<object>>(sp => CreateOrderedCache(sp));
             }
             else
             {
-                services.AddModule<Baubit.Caching.DI.InMemory.Module<object>, Baubit.Caching.DI.InMemory.Configuration>(config =>
-                {
-                    config.CacheLifetime = ServiceLifetime.Singleton;
-                    config.RegistrationKey = cacheKey;
-                });
+                services.AddKeyedSingleton<IOrderedCache<object>>(cacheKey, (sp, key) => CreateOrderedCache(sp));
             }
             
             return services;
+        }
+
+        private static IOrderedCache<object> CreateOrderedCache(IServiceProvider serviceProvider)
+        {
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            var cacheConfig = new Baubit.Caching.Configuration();
+            var metadata = new Metadata { Configuration = cacheConfig };
+            var l2Store = new Store<object>(loggerFactory);
+            
+            return new OrderedCache<object>(cacheConfig, null, l2Store, metadata, loggerFactory);
         }
 
         [Fact]
@@ -332,7 +337,7 @@ namespace Baubit.Mediation.DI.Test.Module
         }
 
         [Fact]
-        public void Module_IsSubclassOfAModule()
+        public void Module_IsSubclassOfModule()
         {
             // Arrange
             var configuration = new DI.Configuration();
@@ -341,7 +346,7 @@ namespace Baubit.Mediation.DI.Test.Module
             var module = new DI.Module(configuration);
 
             // Assert
-            Assert.IsAssignableFrom<Baubit.DI.AModule<DI.Configuration>>(module);
+            Assert.IsAssignableFrom<Baubit.DI.Module<DI.Configuration>>(module);
         }
     }
 }
