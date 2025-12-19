@@ -28,30 +28,16 @@ Install-Package Baubit.Mediation.DI
 
 Baubit.Mediation.DI supports three patterns for module loading, consistent with [Baubit.DI](https://github.com/pnagoorkar/Baubit.DI).
 
-### Important: Module Registration
-
-Before using any pattern, you must register the module with `[BaubitModule]` attribute for security:
-
-```csharp
-using Baubit.DI;
-
-namespace Baubit.Mediation.DI
-{
-    [BaubitModule("baubit-mediation")]
-    public class Module : Baubit.DI.Module<Configuration>
-    {
-        // Module implementation
-    }
-}
-```
-
-The `[BaubitModule]` attribute enables compile-time validated, secure configuration loading using simple string keys instead of assembly-qualified type names.
+> **Critical:** If you're creating your own modules or using configuration-based loading, you **MUST** call `Register()` on your module registry before any module loading operations. See [Module Registration](#module-registration) below.
 
 ### Pattern 1: Modules from appsettings.json
 
 Load mediator configuration from JSON using secure module keys.
 
 ```csharp
+// IMPORTANT: Register your module registry first (if you have custom modules)
+// MyModuleRegistry.Register();
+
 await Host.CreateApplicationBuilder()
           .UseConfiguredServiceProviderFactory()
           .Build()
@@ -79,6 +65,9 @@ await Host.CreateApplicationBuilder()
 Load mediator programmatically using `IComponent`. No configuration file needed.
 
 ```csharp
+// IMPORTANT: Register your module registry first (if you have custom modules)
+// MyModuleRegistry.Register();
+
 public class AppComponent : Component
 {
     protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
@@ -101,6 +90,9 @@ await Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings())
 Combine configuration-based and code-based module loading.
 
 ```csharp
+// IMPORTANT: Register your module registry first (if you have custom modules)
+// MyModuleRegistry.Register();
+
 await Host.CreateApplicationBuilder()
           .UseConfiguredServiceProviderFactory(componentsFactory: () => [new AppComponent()])
           .Build()
@@ -127,6 +119,69 @@ services.AddModule<Module, Configuration>(config =>
 var serviceProvider = services.BuildServiceProvider();
 var mediator = serviceProvider.GetRequiredService<IMediator>();
 ```
+
+## Module Registration
+
+> **Critical:** If you're using configuration-based module loading (Pattern 1 or Pattern 3) with custom modules in your own projects, you **MUST** call `Register()` on your module registry before calling `UseConfiguredServiceProviderFactory()`. This is a common source of frustration - don't skip this step!
+
+Baubit.Mediation.DI's module is already registered in the Baubit.DI ecosystem via the `[BaubitModule("baubit-mediation")]` attribute. However, if you're creating your own modules in your application, you need to register them.
+
+### For Consumer Projects with Custom Modules
+
+If you're building an application or library with your own modules:
+
+**Step 1: Create a Registry Class**
+
+```csharp
+using Baubit.DI;
+
+namespace MyProject
+{
+    [GeneratedModuleRegistry]
+    internal static partial class MyModuleRegistry
+    {
+        // Register() method will be generated automatically
+    }
+}
+```
+
+**Step 2: Define Your Custom Modules**
+
+```csharp
+[BaubitModule("my-custom-module")]
+public class MyCustomModule : Module<MyConfig>
+{
+    public MyCustomModule(IConfiguration config) : base(config) { }
+    
+    public override void Load(IServiceCollection services)
+    {
+        services.AddSingleton<IMyService, MyService>();
+    }
+}
+```
+
+**Step 3: ALWAYS Call Register() Before Module Loading**
+
+```csharp
+// THIS IS CRITICAL - Call before UseConfiguredServiceProviderFactory()
+MyModuleRegistry.Register();
+
+await Host.CreateApplicationBuilder()
+          .UseConfiguredServiceProviderFactory()
+          .Build()
+          .RunAsync();
+```
+
+**Why this is required:**
+- The main `Baubit.DI.ModuleRegistry` only knows about modules in Baubit assemblies
+- Consumer assemblies must explicitly register their modules with `ModuleRegistry.RegisterExternal()`
+- The generated `Register()` method does this automatically
+- Registration must happen before `UseConfiguredServiceProviderFactory()` initializes the module system
+- **Forgetting this step will cause "module not found" errors**
+
+### For Simple Applications Using Only Baubit Modules
+
+If you're only using Baubit.Mediation.DI and other Baubit modules without creating your own custom modules, you don't need to create a registry - the modules are already registered in the Baubit ecosystem.
 
 ## Features
 
