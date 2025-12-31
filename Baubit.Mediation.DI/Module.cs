@@ -80,11 +80,11 @@ namespace Baubit.Mediation.DI
             return new Mediator(CreateOrderedCache(serviceProvider), serviceProvider.GetRequiredService<ILoggerFactory>());
         }
 
-        private IOrderedCache<object> CreateOrderedCache(IServiceProvider serviceProvider)
+        private IOrderedCache<long, object> CreateOrderedCache(IServiceProvider serviceProvider)
         {
             return Configuration.CacheRegistrationKey == null ?
-                   serviceProvider.GetRequiredService<IOrderedCache<object>>() :
-                   serviceProvider.GetRequiredKeyedService<IOrderedCache<object>>(Configuration.CacheRegistrationKey);
+                   serviceProvider.GetRequiredService<IOrderedCache<long, object>>() :
+                   serviceProvider.GetRequiredKeyedService<IOrderedCache<long, object>>(Configuration.CacheRegistrationKey);
         }
     }
 }
