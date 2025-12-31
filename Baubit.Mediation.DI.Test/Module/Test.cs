@@ -26,24 +26,24 @@ namespace Baubit.Mediation.DI.Test.Module
             // Register OrderedCache using Baubit.Caching InMemory implementations
             if (cacheKey == null)
             {
-                services.AddSingleton<IOrderedCache<object>>(sp => CreateOrderedCache(sp));
+                services.AddSingleton<IOrderedCache<long, object>>(sp => CreateOrderedCache(sp));
             }
             else
             {
-                services.AddKeyedSingleton<IOrderedCache<object>>(cacheKey, (sp, key) => CreateOrderedCache(sp));
+                services.AddKeyedSingleton<IOrderedCache<long, object>>(cacheKey, (sp, key) => CreateOrderedCache(sp));
             }
             
             return services;
         }
 
-        private static IOrderedCache<object> CreateOrderedCache(IServiceProvider serviceProvider)
+        private static IOrderedCache<long, object> CreateOrderedCache(IServiceProvider serviceProvider)
         {
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var cacheConfig = new Baubit.Caching.Configuration();
-            var metadata = new Metadata { Configuration = cacheConfig };
-            var l2Store = new Caching.InMemory.Store<object>(loggerFactory);
+            var metadata = new Caching.Extensions.Long.InMemory.Metadata(cacheConfig, loggerFactory);
+            var l2Store = new Caching.Extensions.Long.InMemory.Store<object>(loggerFactory);
             
-            return new OrderedCache<object>(cacheConfig, null, l2Store, metadata, loggerFactory);
+            return new Caching.Extensions.Long.OrderedCache<object>(cacheConfig, null, l2Store, metadata, loggerFactory);
         }
 
         [Fact]

@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="Baubit.DI.Extensions" Version="2025.51.1" />
-    <PackageReference Include="Baubit.Mediation" Version="2025.51.2" />
+    <PackageReference Include="Baubit.Mediation" Version="2026.1.1" />
   </ItemGroup>
 
 </Project>
