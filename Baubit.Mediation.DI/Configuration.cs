@@ -1,5 +1,4 @@
-﻿using Baubit.DI;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Baubit.Mediation.DI
 {
@@ -10,8 +9,8 @@ namespace Baubit.Mediation.DI
     public class Configuration : Baubit.DI.Configuration
     {
         /// <summary>
-        /// Gets or sets the registration key for retrieving the <see cref="Baubit.Caching.IOrderedCache{T}"/> dependency.
-        /// When null, the unkeyed <see cref="Baubit.Caching.IOrderedCache{T}"/> service is resolved.
+        /// Gets or sets the registration key for retrieving the <see cref="Baubit.Caching.IOrderedCache{TId, TValue}"/> dependency.
+        /// When null, the unkeyed <see cref="Baubit.Caching.IOrderedCache{TId, TValue}"/> service is resolved.
         /// </summary>
         public string CacheRegistrationKey { get; set; } = null;
 
