@@ -36,14 +36,18 @@ namespace Baubit.Mediation.DI.Test.Module
             return services;
         }
 
+        private static long _nextId = 0;
         private static IOrderedCache<long, object> CreateOrderedCache(IServiceProvider serviceProvider)
         {
+            var configuration = new Baubit.Caching.Configuration();
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            // nextIdFactory generates incrementing long IDs
+            Func<long?, long?> nextIdFactory = (lastId) => Interlocked.Increment(ref _nextId);
             var cacheConfig = new Baubit.Caching.Configuration();
-            var metadata = new Caching.Extensions.Long.InMemory.Metadata(cacheConfig, loggerFactory);
-            var l2Store = new Caching.Extensions.Long.InMemory.Store<object>(loggerFactory);
-            
-            return new Caching.Extensions.Long.OrderedCache<object>(cacheConfig, null, l2Store, metadata, loggerFactory);
+            var l2Store = new Baubit.Caching.InMemory.Store<long, object>(null, null, nextIdFactory, loggerFactory);
+            var metadata = new Baubit.Caching.InMemory.Metadata<long>(configuration, loggerFactory);
+
+            return new Caching.OrderedCache<long, object>(cacheConfig, null, l2Store, metadata, loggerFactory);
         }
 
         [Fact]
