@@ -15,7 +15,7 @@
   <ItemGroup Condition="'$(ParentPackagesPropsPath)' == ''">
     <!-- Production Dependencies -->
     <PackageVersion Include="Baubit.DI.Extensions" Version="2025.51.1" />
-    <PackageVersion Include="Baubit.Mediation" Version="2026.3.1-prerelease" />
+    <PackageVersion Include="Baubit.Mediation" Version="2026.4.1" />
     
     <!-- Test Dependencies -->
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
