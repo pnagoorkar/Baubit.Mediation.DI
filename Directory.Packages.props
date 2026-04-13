@@ -14,7 +14,7 @@
   <!-- Define package versions only when parent doesn't exist (standalone builds) -->
   <ItemGroup Condition="'$(ParentPackagesPropsPath)' == ''">
     <!-- Production Dependencies -->
-    <PackageVersion Include="Baubit.DI.Extensions" Version="2025.51.1" />
+    <PackageVersion Include="Baubit.DI.Extensions" Version="2026.16.1" />
     <PackageVersion Include="Baubit.Mediation" Version="2026.4.1" />
     
     <!-- Test Dependencies -->
